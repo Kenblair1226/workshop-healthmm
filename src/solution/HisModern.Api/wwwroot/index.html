@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>門診掛號系統 (Modern)</title>
+  <style>
+    body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; margin: 0; background: #f4f6f8; color: #222; }
+    header { background: #0b5394; color: #fff; padding: 14px 24px; }
+    header h1 { margin: 0; font-size: 20px; }
+    header small { opacity: .8; }
+    main { max-width: 960px; margin: 20px auto; padding: 0 16px; display: grid; gap: 18px; }
+    .card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+    .card h2 { margin: 0 0 12px; font-size: 16px; color: #0b5394; border-left: 4px solid #0b5394; padding-left: 8px; }
+    label { font-size: 13px; color: #555; display: block; margin-bottom: 4px; }
+    select, button { font-size: 14px; padding: 7px 10px; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #0b5394; color: #fff; border: none; cursor: pointer; }
+    button.sec { background: #e0e0e0; color: #333; }
+    button:hover { opacity: .9; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #eee; padding: 7px 8px; text-align: left; }
+    th { background: #f0f4f8; }
+    .pill { padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+    .s0 { background:#e3f2fd; color:#0b5394;} .s1{ background:#e8f5e9; color:#2e7d32;}
+    .s2 { background:#ede7f6; color:#5e35b1;} .s3{ background:#fbe9e7; color:#c62828;}
+    #msg { font-size: 13px; min-height: 18px; }
+    .stat { display:inline-block; margin-right:18px; }
+    .stat b { font-size: 22px; color:#0b5394; }
+    a.swagger { color:#fff; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>門診掛號系統 <small>Outpatient Registration (Refactored Demo)</small></h1>
+    <small>API 文件: <a class="swagger" href="/swagger" target="_blank">/swagger</a></small>
+  </header>
+  <main>
+    <div class="card">
+      <h2>新增掛號</h2>
+      <div class="row">
+        <div>
+          <label>病患</label>
+          <select id="patient"></select>
+        </div>
+        <div>
+          <label>門診時段</label>
+          <select id="schedule"></select>
+        </div>
+        <button onclick="createGuahao()">掛號</button>
+      </div>
+      <p id="msg"></p>
+    </div>
+
+    <div class="card">
+      <h2>今日統計</h2>
+      <div id="report"></div>
+    </div>
+
+    <div class="card">
+      <h2>掛號清單</h2>
+      <table>
+        <thead><tr><th>序號</th><th>病患</th><th>年齡</th><th>醫師</th><th>科別</th><th>診間</th><th>狀態</th><th>操作</th></tr></thead>
+        <tbody id="list"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const periodText = { 1: "早診", 2: "午診", 3: "晚診" };
+
+    async function loadPatients() {
+      // legacy 沒有提供 patient list API, 先寫死前端 (又一個技術債)
+      const patients = [
+        { id: 1, name: "張三" }, { id: 2, name: "李四" }, { id: 3, name: "小明" }
+      ];
+      document.getElementById("patient").innerHTML =
+        patients.map(p => `<option value="${p.id}">${p.id} - ${p.name}</option>`).join("");
+    }
+
+    async function loadSchedules() {
+      // 一樣寫死 (對應 DB.Seed 的門診時段)
+      const sch = [
+        { id: 1, t: "內科 王大明 早診 (201)" },
+        { id: 2, t: "內科 李美麗 午診 (202)" },
+        { id: 3, t: "外科 陳志強 早診 (301)" },
+        { id: 4, t: "小兒科 林淑芬 晚診 (401)" }
+      ];
+      document.getElementById("schedule").innerHTML =
+        sch.map(s => `<option value="${s.id}">${s.t}</option>`).join("");
+    }
+
+    async function createGuahao() {
+      const patientId = parseInt(document.getElementById("patient").value);
+      const scheduleId = parseInt(document.getElementById("schedule").value);
+      const r = await fetch("/api/guahao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId, scheduleId })
+      });
+      const j = await r.json();
+      const msg = document.getElementById("msg");
+      if (j.ok) { msg.style.color = "#2e7d32"; msg.textContent = `掛號成功! 看診序號 ${j.number} 號, 診間 ${j.room}`; }
+      else { msg.style.color = "#c62828"; msg.textContent = "掛號失敗: " + j.msg; }
+      refresh();
+    }
+
+    async function refresh() {
+      const list = await (await fetch("/api/guahao")).json();
+      document.getElementById("list").innerHTML = list.map(g => `
+        <tr>
+          <td>${g.number}</td><td>${g.patient}</td><td>${g.age}</td><td>${g.doctor}</td>
+          <td>${g.dept}</td><td>${g.room}</td>
+          <td><span class="pill s${g.status}">${g.statusText}</span></td>
+          <td>
+            <button class="sec" onclick="baodao(${g.guahaoId})">報到</button>
+            <button class="sec" onclick="cancel(${g.guahaoId})">取消</button>
+          </td>
+        </tr>`).join("");
+
+      const rep = await (await fetch("/api/report/today")).json();
+      document.getElementById("report").innerHTML =
+        `<span class="stat">總掛號<br><b>${rep.total}</b></span>
+         <span class="stat">已報到<br><b>${rep.baodao}</b></span>
+         <span class="stat">已取消<br><b>${rep.cancel}</b></span>`;
+    }
+
+    async function baodao(id) { await fetch(`/api/guahao/${id}/baodao`, { method: "POST" }); refresh(); }
+    async function cancel(id) { await fetch(`/api/guahao/${id}/cancel`, { method: "POST" }); refresh(); }
+
+    loadPatients(); loadSchedules(); refresh();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+## .NET build output
+bin/
+obj/
+
+## User-specific / secrets (請勿 commit 真實金鑰)
+*.user
+appsettings.*.local.json
+.vs/

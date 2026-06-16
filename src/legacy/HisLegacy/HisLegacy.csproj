@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- 注意:這是一套「年久失修」的門診掛號系統,刻意保留 legacy 風格作為重構教材 -->
+  <!-- Nullable 與 ImplicitUsings 都關閉,貼近舊專案。請勿在 lab 開始前先行重構。 -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>HisLegacy</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+</Project>

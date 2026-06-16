@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Healthcare SDLC 2.0 — Hands-on Lab</title>
+
+<!-- Fonts: Sora (display) + Space Grotesk (body) + JetBrains Mono (code) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+/* =========================================================
+   THEME TOKENS — change these to restyle the whole deck
+   ========================================================= */
+:root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #111a2e;
+    --bg-card: #16213d;
+    --text-primary: #eaf2ff;
+    --text-secondary: #93a4c3;
+    --accent: #2dd4bf;          /* teal — primary medical accent */
+    --accent-2: #ff7a6b;        /* coral — energy accent */
+    --accent-3: #ffd166;        /* amber — highlights */
+    --accent-glow: rgba(45, 212, 191, 0.35);
+    --line: rgba(147, 164, 195, 0.18);
+
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-normal: 0.65s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- viewport-base.css (MANDATORY, included in full) --- */
+html, body { height: 100%; overflow-x: hidden; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.slide {
+    width: 100vw; height: 100vh; height: 100dvh; overflow: hidden;
+    scroll-snap-align: start; display: flex; flex-direction: column; position: relative;
+}
+.slide-content {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    max-height: 100%; overflow: hidden; padding: var(--slide-padding);
+}
+:root {
+    --title-size: clamp(1.5rem, 5vw, 4rem);
+    --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+    --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+    --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+    --small-size: clamp(0.65rem, 1vw, 0.875rem);
+    --slide-padding: clamp(1rem, 4vw, 4rem);
+    --content-gap: clamp(0.5rem, 2vw, 2rem);
+    --element-gap: clamp(0.25rem, 1vw, 1rem);
+}
+.card, .container, .content-box { max-width: min(90vw, 1000px); max-height: min(80vh, 700px); }
+.feature-list, .bullet-list { gap: clamp(0.4rem, 1vh, 1rem); }
+.feature-list li, .bullet-list li { font-size: var(--body-size); line-height: 1.4; }
+.grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fit: contain; }
+@media (max-height: 700px) { :root {
+    --slide-padding: clamp(0.75rem, 3vw, 2rem); --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+    --title-size: clamp(1.25rem, 4.5vw, 2.5rem); --h2-size: clamp(1rem, 3vw, 1.75rem);
+}}
+@media (max-height: 600px) { :root {
+    --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem); --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+    --title-size: clamp(1.1rem, 4vw, 2rem); --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+}
+.nav-dots, .keyboard-hint, .decorative { display: none; } }
+@media (max-height: 500px) { :root {
+    --slide-padding: clamp(0.4rem, 2vw, 1rem); --title-size: clamp(1rem, 3.5vw, 1.5rem);
+    --h2-size: clamp(0.9rem, 2.5vw, 1.25rem); --body-size: clamp(0.65rem, 1vw, 0.85rem);
+}}
+@media (max-width: 600px) { :root { --title-size: clamp(1.25rem, 7vw, 2.5rem); } .grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+    html { scroll-behavior: auto; }
+}
+
+/* =========================================================
+   REVEAL ANIMATIONS
+   ========================================================= */
+.reveal { opacity: 0; transform: translateY(28px);
+    transition: opacity var(--duration-normal) var(--ease-out-expo),
+                transform var(--duration-normal) var(--ease-out-expo); }
+.slide.visible .reveal { opacity: 1; transform: translateY(0); }
+.slide.visible .reveal:nth-child(1) { transition-delay: 0.05s; }
+.slide.visible .reveal:nth-child(2) { transition-delay: 0.15s; }
+.slide.visible .reveal:nth-child(3) { transition-delay: 0.25s; }
+.slide.visible .reveal:nth-child(4) { transition-delay: 0.35s; }
+.slide.visible .reveal:nth-child(5) { transition-delay: 0.45s; }
+.slide.visible .reveal:nth-child(6) { transition-delay: 0.55s; }
+
+/* =========================================================
+   SHARED ELEMENTS
+   ========================================================= */
+h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 1.08; letter-spacing: -0.02em; }
+.eyebrow {
+    font-family: var(--font-mono); font-size: var(--small-size); letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+}
+.accent { color: var(--accent); }
+.accent2 { color: var(--accent-2); }
+.muted { color: var(--text-secondary); }
+
+/* atmospheric background blobs */
+.slide::before {
+    content: ""; position: absolute; width: 60vw; height: 60vw;
+    border-radius: 50%; filter: blur(120px); opacity: 0.16; z-index: 0;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    top: -20vw; right: -15vw; pointer-events: none;
+}
+.slide:nth-child(even)::before { background: radial-gradient(circle, var(--accent-2) 0%, transparent 70%); top: auto; bottom: -20vw; left: -15vw; right: auto; }
+.slide-content { position: relative; z-index: 1; }
+
+/* slide number badge */
+.snum {
+    position: absolute; top: clamp(1rem, 3vh, 2rem); left: clamp(1rem, 3vw, 2.5rem);
+    font-family: var(--font-mono); font-size: var(--small-size); color: var(--text-secondary);
+    letter-spacing: 0.2em; z-index: 2;
+}
+.brand {
+    position: absolute; top: clamp(1rem, 3vh, 2rem); right: clamp(1rem, 3vw, 2.5rem);
+    font-family: var(--font-mono); font-size: var(--small-size); color: var(--text-secondary);
+    letter-spacing: 0.15em; z-index: 2;
+}
+
+/* cards */
+.kcard {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: 16px;
+    padding: clamp(0.9rem, 2vw, 1.5rem); position: relative; overflow: hidden;
+}
+.kcard h3 { font-size: var(--h3-size); margin-bottom: 0.4em; }
+.kcard p { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.45; }
+.kcard .ic { font-size: clamp(1.4rem, 3vw, 2.2rem); margin-bottom: 0.3em; display: block; }
+.kcard::after { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent); }
+.kcard.c2::after { background: var(--accent-2); }
+.kcard.c3::after { background: var(--accent-3); }
+
+ul.bullet-list { list-style: none; display: flex; flex-direction: column; }
+ul.bullet-list li { display: flex; gap: 0.6em; align-items: flex-start; color: var(--text-secondary); }
+ul.bullet-list li::before { content: "▸"; color: var(--accent); font-weight: 700; }
+ul.bullet-list li b { color: var(--text-primary); font-weight: 700; }
+
+/* code block */
+pre.code {
+    font-family: var(--font-mono); font-size: clamp(0.6rem, 1.15vw, 0.95rem);
+    background: #0c1426; border: 1px solid var(--line); border-radius: 12px;
+    padding: clamp(0.8rem, 2vw, 1.4rem); line-height: 1.55; overflow: hidden; color: #cde3ff;
+    max-width: min(92vw, 880px);
+}
+pre.code .c { color: #5b7089; }
+pre.code .k { color: var(--accent); }
+pre.code .r { color: var(--accent-2); }
+pre.code .g { color: var(--accent-3); }
+
+/* agenda timeline */
+.timeline { display: flex; flex-direction: column; gap: clamp(0.35rem, 1.1vh, 0.8rem); max-width: min(92vw, 840px); }
+.tl-row { display: grid; grid-template-columns: clamp(70px,12vw,120px) 1fr; gap: clamp(0.6rem,2vw,1.4rem); align-items: baseline; }
+.tl-row .t { font-family: var(--font-mono); color: var(--accent); font-size: var(--small-size); }
+.tl-row .d { font-size: var(--body-size); }
+.tl-row .d b { font-weight: 700; }
+.tl-row.hot .d b { color: var(--accent-3); }
+
+/* big section divider */
+.section-num { font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(4rem, 16vw, 13rem); line-height: 0.85; color: transparent;
+    -webkit-text-stroke: 2px var(--accent); opacity: 0.85; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pill { font-family: var(--font-mono); font-size: var(--small-size);
+    border: 1px solid var(--line); border-radius: 999px; padding: 0.3em 0.9em; color: var(--text-secondary); }
+.pill.on { border-color: var(--accent); color: var(--accent); }
+
+/* title slide */
+.title-slide .slide-content { justify-content: center; }
+.title-kicker { font-family: var(--font-mono); letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--accent); font-size: var(--small-size); }
+.title-main { font-size: clamp(2rem, 7vw, 5.5rem); margin: 0.2em 0 0.15em; }
+.title-sub { font-size: var(--h3-size); color: var(--text-secondary); font-family: var(--font-display); font-weight: 600; }
+.title-meta { margin-top: clamp(1rem,3vh,2rem); display: flex; flex-wrap: wrap; gap: clamp(0.6rem,2vw,1.5rem);
+    font-family: var(--font-mono); font-size: var(--small-size); color: var(--text-secondary); }
+.title-meta span b { color: var(--accent); }
+.flow-arrow { color: var(--accent-2); font-weight: 700; }
+
+/* arch diagram */
+.arch { display: flex; align-items: center; justify-content: center; gap: clamp(0.5rem,2vw,1.5rem);
+    flex-wrap: wrap; max-width: min(94vw, 940px); }
+.arch .box { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(0.7rem,1.8vw,1.3rem) clamp(0.9rem,2.2vw,1.6rem); text-align: center; min-width: clamp(120px,22vw,200px); }
+.arch .box .lab { font-family: var(--font-mono); font-size: var(--small-size); color: var(--accent); }
+.arch .box .nm { font-size: var(--body-size); font-weight: 700; margin-top: 0.2em; }
+.arch .box .ds { font-size: var(--small-size); color: var(--text-secondary); margin-top: 0.2em; }
+.arch .arrow { color: var(--accent-2); font-size: clamp(1.2rem,3vw,2rem); font-weight: 700; }
+.arch .box.modern { border-color: var(--accent); box-shadow: 0 0 28px var(--accent-glow); }
+
+/* progress + nav */
+.progress-bar { position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 9999; transition: width 0.15s linear; }
+.nav-dots { position: fixed; right: clamp(0.6rem, 1.5vw, 1.4rem); top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 0.55rem; z-index: 9998; }
+.nav-dots button { width: 9px; height: 9px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--line); padding: 0; transition: all 0.25s ease; }
+.nav-dots button.active { background: var(--accent); transform: scale(1.5); }
+.keyboard-hint { position: fixed; bottom: clamp(0.5rem,2vh,1.2rem); left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: clamp(0.6rem,1vw,0.8rem); color: var(--text-secondary);
+    opacity: 0.6; z-index: 9998; }
+
+h2.slide-h { font-size: var(--h2-size); margin-bottom: clamp(0.5rem,1.6vh,1.1rem); }
+h2.slide-h .accent { display: inline; }
+.lead { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.5; max-width: 60ch; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.8rem,2.5vw,2rem); align-items: center; }
+@media (max-width: 720px){ .two-col { grid-template-columns: 1fr; } }
+.goal { font-family: var(--font-mono); font-size: var(--small-size); color: var(--accent-3);
+    border-left: 3px solid var(--accent-3); padding-left: 0.7em; margin-top: clamp(0.6rem,1.6vh,1rem); }
+</style>
+</head>
+<body>
+<div class="progress-bar"></div>
+<nav class="nav-dots" aria-label="slide navigation"></nav>
+<div class="keyboard-hint">← → / Space 換頁 · 點右側圓點跳轉</div>
+
+<!-- ============ 01 TITLE ============ -->
+<section class="slide title-slide">
+    <span class="brand">GitHub Copilot × Azure</span>
+    <div class="slide-content">
+        <p class="title-kicker reveal">Healthcare SDLC 2.0 · Hands-on Lab</p>
+        <h1 class="title-main reveal">AI 時代的醫療資訊系統<br><span class="accent">現代化與遷移實戰</span></h1>
+        <p class="title-sub reveal">From Legacy HIS <span class="flow-arrow">→</span> AI-Ready Platform</p>
+        <div class="title-meta reveal">
+            <span><b>日期</b> 2026/06/22</span>
+            <span><b>時間</b> 13:00–16:30</span>
+            <span><b>地點</b> 台灣微軟 19F MPR 2</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 02 市場背景 ============ -->
+<section class="slide">
+    <span class="snum">02</span><span class="brand">為什麼是現在</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Market Context</p>
+        <h2 class="slide-h reveal">過去 15–20 年，HIS 幾乎沒機會<span class="accent">基礎現代化</span></h2>
+        <div class="grid reveal" style="margin-top: var(--content-gap);">
+            <div class="kcard"><span class="ic">🏥</span><h3>系統老化</h3><p>核心 HIS / NIS 受限經費，技術債持續累積，牽一髮動全身。</p></div>
+            <div class="kcard c2"><span class="ic">🤖</span><h3>GenAI 契機</h3><p>近年最有能力協助 IT 改寫、升級老舊核心系統的技術契機。</p></div>
+            <div class="kcard c3"><span class="ic">🔒</span><h3>資安疑慮</h3><p>資料隱私與法規遵循的擔憂，讓許多醫院躊躇不前。</p></div>
+        </div>
+        <p class="goal reveal">M&M 工作坊：在高資安 / 高隱私 / 高法規環境下，安全地「養龍蝦 🦞」。</p>
+    </div>
+</section>
+
+<!-- ============ 03 痛點 ============ -->
+<section class="slide">
+    <span class="snum">03</span><span class="brand">您最關心的問題</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">The Pain</p>
+        <h2 class="slide-h reveal">三個讓 HIS 團隊頭痛的問題</h2>
+        <ul class="bullet-list reveal" style="margin-top: var(--content-gap); font-size: var(--h3-size); gap: clamp(0.6rem,2vh,1.4rem);">
+            <li><b>系統維護負擔重</b>，牽一髮動全身 — 怎麼破？</li>
+            <li><b>臨床與行政需求變動快</b>，改版跟不上 — 怎麼辦？</li>
+            <li><b>資料分散</b>，AI 應用難落地 — 如何整合？</li>
+        </ul>
+        <p class="goal reveal">本場從 SDLC 出發，結合 GitHub Copilot + Azure，實作完整升級路徑。</p>
+    </div>
+</section>
+
+<!-- ============ 04 解法 SDLC ============ -->
+<section class="slide">
+    <span class="snum">04</span><span class="brand">解法概念</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">The Approach · AI-Augmented SDLC</p>
+        <h2 class="slide-h reveal">AI 理解 <span class="accent">→</span> 修改 <span class="accent">→</span> 部署</h2>
+        <div class="arch reveal" style="margin-top: var(--content-gap);">
+            <div class="box"><div class="lab">理解 Understand</div><div class="nm">讀懂 Legacy</div><div class="ds">/explain · 文件化</div></div>
+            <span class="arrow">→</span>
+            <div class="box"><div class="lab">修改 Modify</div><div class="nm">重構 · 加測試</div><div class="ds">refactor · tests</div></div>
+            <span class="arrow">→</span>
+            <div class="box modern"><div class="lab">部署 Deploy</div><div class="nm">上雲 · AI Agent</div><div class="ds">App Service · 容器化</div></div>
+        </div>
+        <p class="goal reveal">用一套真實的「門診掛號系統」走完整條現代化旅程。</p>
+    </div>
+</section>
+
+<!-- ============ 05 議程 ============ -->
+<section class="slide">
+    <span class="snum">05</span><span class="brand">活動議程</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Agenda · 2026/06/22</p>
+        <h2 class="slide-h reveal">下午半天，從<span class="accent2">概念</span>到<span class="accent">實作</span></h2>
+        <div class="timeline reveal" style="margin-top: var(--content-gap);">
+            <div class="tl-row"><span class="t">13:30</span><span class="d"><b>Opening</b> — 醫療系統現代化與 AI SDLC 趨勢</span></div>
+            <div class="tl-row"><span class="t">13:50</span><span class="d"><b>GitHub Copilot</b> 介紹與企業導入（授權 / 治理 / 案例）</span></div>
+            <div class="tl-row hot"><span class="t">14:50</span><span class="d"><b>Hands-on Lab · 基礎實作</b> — 讀懂 / 重構 / 模型 / Extension / Skills</span></div>
+            <div class="tl-row hot"><span class="t">15:50</span><span class="d"><b>Hands-on Lab · 進階實作（Azure · 講師示範）</b> — App Service / AI Agent</span></div>
+            <div class="tl-row"><span class="t">16:20</span><span class="d">Q&A 與綜合討論</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 06 SECTION: 基礎 ============ -->
+<section class="slide">
+    <div class="slide-content" style="align-items:flex-start;">
+        <div class="section-num reveal">01</div>
+        <h2 class="slide-h reveal" style="margin-top:0.2em;">基礎實作 · <span class="accent">讀懂與重構</span></h2>
+        <p class="lead reveal">14:50–15:50 · 把 GitHub Copilot 變成你的 Legacy 系統嚮導</p>
+        <div class="pill-row reveal" style="margin-top: var(--content-gap);">
+            <span class="pill on">讀懂程式碼</span><span class="pill on">Code 重構</span>
+            <span class="pill on">模型選擇</span><span class="pill on">Extension</span><span class="pill on">Copilot Skills</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 07 環境準備 ============ -->
+<section class="slide">
+    <span class="snum">07</span><span class="brand">Lab 00 · Setup</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 00 · 環境準備</p>
+        <h2 class="slide-h reveal">三步驟備好你的工作站</h2>
+        <div class="two-col reveal" style="margin-top: var(--content-gap);">
+            <ul class="bullet-list">
+                <li><b>VS Code</b> + GitHub Copilot 擴充套件（已登入企業帳號）</li>
+                <li><b>.NET 8 SDK</b> · <b>Docker</b> · <b>Azure CLI</b></li>
+                <li>Clone 範例：<b>healthMM</b> repo</li>
+                <li>啟動 Legacy 系統：<b>dotnet run</b></li>
+            </ul>
+            <pre class="code"><span class="c"># 取得範例並啟動門診掛號系統</span>
+git clone &lt;healthMM&gt;
+cd src/legacy/HisLegacy
+<span class="k">dotnet</span> run
+<span class="c"># → http://localhost:5080  (Swagger: /swagger)</span></pre>
+        </div>
+        <p class="goal reveal">目標：瀏覽器看到可運作的門診掛號系統，準備好「動手改」。</p>
+    </div>
+</section>
+
+<!-- ============ 08 Lab1 讀懂 ============ -->
+<section class="slide">
+    <span class="snum">08</span><span class="brand">Lab 01</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 01 · 讀懂程式碼</p>
+        <h2 class="slide-h reveal">讓 Copilot 當你的 <span class="accent">Legacy 嚮導</span></h2>
+        <div class="two-col reveal" style="margin-top: var(--content-gap);">
+            <ul class="bullet-list">
+                <li><b>/explain</b> 解析 GuahaoController 這支「God Controller」</li>
+                <li>用 <b>Ask</b> 問業務規則：晚診年齡限制、額滿判斷</li>
+                <li>請 Copilot 產生<b>系統流程圖</b>與函式說明</li>
+                <li>找出 <b>code smells</b>：重複的年齡計算、magic number</li>
+            </ul>
+            <pre class="code"><span class="c">// 在 Copilot Chat 試試：</span>
+<span class="k">@workspace</span> 這個專案是做什麼的?
+<span class="k">/explain</span> 解釋 Create() 的業務規則
+這段程式碼有哪些 <span class="r">code smell</span>?
+找出重複出現的<span class="g">年齡計算</span>邏輯</pre>
+        </div>
+        <p class="goal reveal">產出：一頁系統理解筆記 + 待重構清單。</p>
+    </div>
+</section>
+
+<!-- ============ 09 Lab2 重構 ============ -->
+<section class="slide">
+    <span class="snum">09</span><span class="brand">Lab 02</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 02 · Code 重構</p>
+        <h2 class="slide-h reveal">乾淨內在，<span class="accent">不動外部契約</span></h2>
+        <div class="grid reveal" style="margin-top: var(--content-gap);">
+            <div class="kcard"><span class="ic">🧩</span><h3>分層</h3><p>Domain / Application / Infrastructure / API 四層拆分。</p></div>
+            <div class="kcard c2"><span class="ic">♻️</span><h3>去重複</h3><p>年齡計算、狀態文字、業務規則收斂成單一來源。</p></div>
+            <div class="kcard c3"><span class="ic">🔢</span><h3>除魔數</h3><p>狀態 / 診次改用 enum，移除 magic number 與字串。</p></div>
+        </div>
+        <p class="goal reveal">關鍵原則：REST API 與 JSON 契約不變，前端與 demo 持續可用。</p>
+    </div>
+</section>
+
+<!-- ============ 10 模型選擇 (slide-only) ============ -->
+<section class="slide">
+    <span class="snum">10</span><span class="brand">模型選擇</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Pro Tip · 模型選擇 Model Selection</p>
+        <h2 class="slide-h reveal">對的任務，配<span class="accent">對的模型</span></h2>
+        <div class="grid reveal" style="margin-top: var(--content-gap);">
+            <div class="kcard"><span class="ic">⚡</span><h3>快速 / 輕量</h3><p>補全、樣板、簡單重構 — 反應快、成本低。</p></div>
+            <div class="kcard c2"><span class="ic">🧠</span><h3>深度推理</h3><p>跨檔案重構、架構設計、難解 bug — 用強推理模型。</p></div>
+            <div class="kcard c3"><span class="ic">🎯</span><h3>切換時機</h3><p>同一任務卡關 ≥2 次，升級模型再嘗試。</p></div>
+        </div>
+        <p class="goal reveal">重點：同一個重構任務，比較不同模型的輸出與成本，選對工具。</p>
+    </div>
+</section>
+
+<!-- ============ 11 Lab4 Extensions/Skills ============ -->
+<section class="slide">
+    <span class="snum">11</span><span class="brand">Lab 03</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 03 · Extensions · Skills · MCP</p>
+        <h2 class="slide-h reveal">把 Copilot 接上你的<span class="accent">工具鏈</span></h2>
+        <div class="two-col reveal" style="margin-top: var(--content-gap);">
+            <ul class="bullet-list">
+                <li><b>Copilot Skills</b>：自訂可重用的工作流程</li>
+                <li><b>Extensions</b>：在 Chat 內呼叫外部服務</li>
+                <li><b>MCP Server</b>：連接資料庫 / 內部 API / 知識庫</li>
+                <li><b>自訂指令</b>：用 instructions 統一團隊規範</li>
+            </ul>
+            <pre class="code"><span class="c"># .github/copilot-instructions.md</span>
+- API 契約不可破壞
+- 狀態一律使用 <span class="k">enum</span>
+- 每個業務規則需<span class="g">單元測試</span>
+- 註解 / commit 用英文</pre>
+        </div>
+        <p class="goal reveal">產出：團隊專屬的 copilot-instructions，讓 AI 遵循院內規範。</p>
+    </div>
+</section>
+
+<!-- ============ 12 Lab5 測試 ============ -->
+<section class="slide">
+    <span class="snum">12</span><span class="brand">Lab 04</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 04 · 加上安全網</p>
+        <h2 class="slide-h reveal">先有測試，<span class="accent">重構才安心</span></h2>
+        <div class="two-col reveal" style="margin-top: var(--content-gap);">
+            <ul class="bullet-list">
+                <li>用 Copilot 產生 <b>xUnit</b> 測試骨架</li>
+                <li>覆蓋六大業務規則的<b>邊界條件</b></li>
+                <li>晚診年齡（11 拒、12 收）、額滿、重複掛號</li>
+                <li><b>dotnet test</b> 全綠 = 重構守門員</li>
+            </ul>
+            <pre class="code"><span class="k">[Theory]</span>
+<span class="k">[InlineData]</span>(11, <span class="r">false</span>) <span class="c">// 晚診拒收</span>
+<span class="k">[InlineData]</span>(12, <span class="r">true</span>)  <span class="c">// 滿 12 歲可掛</span>
+<span class="k">public void</span> NightClinic_AgeRule(...) { ... }</pre>
+        </div>
+        <p class="goal reveal">參考解答：HisModern.Tests 已涵蓋全部規則，全數通過。</p>
+    </div>
+</section>
+
+<!-- ============ 13 SECTION: 進階 ============ -->
+<section class="slide">
+    <div class="slide-content" style="align-items:flex-start;">
+        <div class="section-num reveal">02</div>
+        <h2 class="slide-h reveal" style="margin-top:0.2em;">進階實作 · <span class="accent">上雲與 AI Agent</span></h2>
+        <p class="lead reveal">15:50–16:20 · 講師示範：從重構後的系統，走向 AI-Ready Platform</p>
+        <div class="pill-row reveal" style="margin-top: var(--content-gap);">
+            <span class="pill on">容器化</span><span class="pill on">Azure App Service</span>
+            <span class="pill on">臨床問答 AI Agent</span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 14 架構演進 ============ -->
+<section class="slide">
+    <span class="snum">14</span><span class="brand">架構演進</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Architecture · Legacy → Cloud-Ready</p>
+        <h2 class="slide-h reveal">逐步演進，<span class="accent">而非打掉重練</span></h2>
+        <div class="arch reveal" style="margin-top: var(--content-gap);">
+            <div class="box"><div class="lab">Legacy</div><div class="nm">Monolith</div><div class="ds">God Controller</div></div>
+            <span class="arrow">→</span>
+            <div class="box"><div class="lab">Refactored</div><div class="nm">分層單體</div><div class="ds">乾淨架構</div></div>
+            <span class="arrow">→</span>
+            <div class="box modern"><div class="lab">Cloud-Ready</div><div class="nm">容器化上雲</div><div class="ds">App Service + AI Agent</div></div>
+        </div>
+        <p class="goal reveal">先封裝邊界（分層），再容器化上雲、加上 AI Agent，降低風險。</p>
+    </div>
+</section>
+
+<!-- ============ 15 Lab5 容器化 App Service (講師 Demo) ============ -->
+<section class="slide">
+    <span class="snum">15</span><span class="brand">Lab 05 · 🎤 Demo</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 05 · 容器化 → Azure App Service · 🎤 講師示範</p>
+        <h2 class="slide-h reveal">一個 <span class="accent">Dockerfile</span>，部署上雲</h2>
+        <div class="two-col reveal" style="margin-top: var(--content-gap);">
+            <ul class="bullet-list">
+                <li>用 Copilot 產生 <b>multi-stage Dockerfile</b></li>
+                <li>本機 <b>docker run</b> 驗證映像檔</li>
+                <li>推送至 <b>Azure Container Registry (ACR)</b></li>
+                <li>部署至 <b>App Service for Containers</b></li>
+            </ul>
+            <pre class="code"><span class="k">az</span> acr build -r &lt;acr&gt; -t his:v1 .
+<span class="k">az</span> webapp create --name his-web \
+  --deployment-container-image-name \
+  &lt;acr&gt;.azurecr.io/his:v1</pre>
+        </div>
+        <p class="goal reveal">最快上雲路徑：適合單體 / 內部系統，維運成本低。</p>
+    </div>
+</section>
+
+<!-- ============ 16 Lab6 AI Agent (講師 Demo) ============ -->
+<section class="slide">
+    <span class="snum">16</span><span class="brand">Lab 06 · 🎤 Demo</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Lab 06 · 臨床問答 AI Agent · 🎤 講師示範</p>
+        <h2 class="slide-h reveal">為系統加上<span class="accent">臨床問答助理</span></h2>
+        <div class="two-col reveal" style="margin-top: var(--content-gap);">
+            <ul class="bullet-list">
+                <li><b>Semantic Kernel</b> + <b>Azure OpenAI</b></li>
+                <li>以門診 FAQ 知識庫做 <b>grounding</b></li>
+                <li>無金鑰時 <b>mock 模式</b> 也能離線 demo</li>
+                <li>部署為服務，與掛號系統整合</li>
+            </ul>
+            <pre class="code"><span class="k">POST</span> /ask
+{ "question": "晚診可以帶小孩掛號嗎?" }
+<span class="c">// → 晚診不開放 12 歲以下掛號…</span>
+<span class="c">//   mode: mock | azure-openai</span></pre>
+        </div>
+        <p class="goal reveal">⚠️ Demo 助理，非醫療建議。展示 AI-Ready 系統的延伸價值。</p>
+    </div>
+</section>
+
+<!-- ============ 17 治理 ============ -->
+<section class="slide">
+    <span class="snum">17</span><span class="brand">企業治理</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Governance</p>
+        <h2 class="slide-h reveal">在<span class="accent">高資安環境</span>安心導入</h2>
+        <div class="grid reveal" style="margin-top: var(--content-gap);">
+            <div class="kcard"><span class="ic">🔐</span><h3>資料邊界</h3><p>企業版不以你的程式碼訓練模型；可設定內容排除。</p></div>
+            <div class="kcard c2"><span class="ic">📋</span><h3>授權治理</h3><p>集中管理席次、政策與稽核，符合法規遵循。</p></div>
+            <div class="kcard c3"><span class="ic">☁️</span><h3>主權雲</h3><p>配合衛福部規劃，於高隱私環境安全使用 GenAI。</p></div>
+        </div>
+        <p class="goal reveal">技術 + 治理並進，才能在醫療場域真正落地。</p>
+    </div>
+</section>
+
+<!-- ============ 18 Takeaways ============ -->
+<section class="slide">
+    <span class="snum">18</span><span class="brand">重點回顧</span>
+    <div class="slide-content">
+        <p class="eyebrow reveal">Key Takeaways</p>
+        <h2 class="slide-h reveal">帶走這<span class="accent">四件事</span></h2>
+        <div class="grid reveal" style="margin-top: var(--content-gap);">
+            <div class="kcard"><span class="ic">🧭</span><h3>理解先行</h3><p>Copilot 先讀懂 Legacy，再動手，風險最低。</p></div>
+            <div class="kcard c2"><span class="ic">🛡️</span><h3>測試護航</h3><p>業務規則測試是重構與上雲的安全網。</p></div>
+            <div class="kcard c3"><span class="ic">🚀</span><h3>漸進上雲</h3><p>App Service 託管、快速上雲，維運成本低。</p></div>
+            <div class="kcard"><span class="ic">🤝</span><h3>AI-Ready</h3><p>乾淨架構 + Agent，讓系統長出新能力。</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 19 結尾 ============ -->
+<section class="slide title-slide">
+    <span class="brand">Healthcare SDLC 2.0</span>
+    <div class="slide-content">
+        <p class="title-kicker reveal">Thank You · 開始動手</p>
+        <h1 class="title-main reveal">安心養龍蝦 🦞<br><span class="accent">打造 AI-Ready HIS</span></h1>
+        <p class="title-sub reveal">範例與 Lab 手冊：<span class="accent2">healthMM</span> repo · labs/ 目錄</p>
+        <div class="title-meta reveal">
+            <span><b>基礎</b> 讀懂 → 重構 → 測試</span>
+            <span><b>進階</b> App Service · AI Agent</span>
+        </div>
+    </div>
+</section>
+
+<script>
+/* =========================================================
+   SLIDE CONTROLLER — nav dots, progress, keyboard, touch
+   ========================================================= */
+class SlidePresentation {
+    constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.current = 0;
+        this.progress = document.querySelector('.progress-bar');
+        this.dotsWrap = document.querySelector('.nav-dots');
+        this.setupObserver();
+        this.setupDots();
+        this.setupKeyboard();
+        this.setupTouch();
+        this.updateProgress();
+        window.addEventListener('scroll', () => this.updateProgress(), { passive: true });
+    }
+    setupObserver() {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    this.current = this.slides.indexOf(e.target);
+                    this.syncDots();
+                }
+            });
+        }, { threshold: 0.5 });
+        this.slides.forEach(s => io.observe(s));
+    }
+    setupDots() {
+        this.slides.forEach((s, i) => {
+            const b = document.createElement('button');
+            b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+            b.addEventListener('click', () => this.slides[i].scrollIntoView({ behavior: 'smooth' }));
+            this.dotsWrap.appendChild(b);
+        });
+        this.dots = Array.from(this.dotsWrap.children);
+        this.syncDots();
+    }
+    syncDots() { if (this.dots) this.dots.forEach((d, i) => d.classList.toggle('active', i === this.current)); }
+    go(dir) {
+        const next = Math.min(Math.max(this.current + dir, 0), this.slides.length - 1);
+        this.slides[next].scrollIntoView({ behavior: 'smooth' });
+    }
+    setupKeyboard() {
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowDown', 'ArrowRight', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); this.go(1); }
+            else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); this.go(-1); }
+            else if (e.key === 'Home') { e.preventDefault(); this.slides[0].scrollIntoView({ behavior: 'smooth' }); }
+            else if (e.key === 'End') { e.preventDefault(); this.slides[this.slides.length - 1].scrollIntoView({ behavior: 'smooth' }); }
+        });
+    }
+    setupTouch() {
+        let y0 = null;
+        window.addEventListener('touchstart', (e) => { y0 = e.touches[0].clientY; }, { passive: true });
+        window.addEventListener('touchend', (e) => {
+            if (y0 === null) return;
+            const dy = y0 - e.changedTouches[0].clientY;
+            if (Math.abs(dy) > 50) this.go(dy > 0 ? 1 : -1);
+            y0 = null;
+        }, { passive: true });
+    }
+    updateProgress() {
+        const max = document.body.scrollHeight - window.innerHeight;
+        this.progress.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    }
+}
+new SlidePresentation();
+</script>
+</body>
+</html>

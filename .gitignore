@@ -1,0 +1,17 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (do NOT commit Azure OpenAI keys etc.)
+appsettings.Local.json
+*.env
+.env

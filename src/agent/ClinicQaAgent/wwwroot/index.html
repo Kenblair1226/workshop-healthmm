@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>門診掛號智能助理 (Clinic Q&A Agent)</title>
+  <style>
+    :root {
+      --primary: #1565c0;
+      --primary-dark: #0d47a1;
+      --bg: #f4f6fb;
+      --bot-bg: #ffffff;
+      --user-bg: #1565c0;
+      --border: #d8deea;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      background: var(--bg);
+      color: #1a1f2b;
+    }
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(13, 71, 161, 0.18);
+    }
+    header h1 { margin: 0 0 4px; font-size: 20px; }
+    header p { margin: 0; font-size: 13px; opacity: 0.92; }
+    .mode-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 2px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .disclaimer {
+      margin: 12px 0;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #8a5a00;
+      background: #fff7e6;
+      border: 1px solid #ffe2a8;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg { display: flex; gap: 10px; align-items: flex-start; }
+    .msg.user { flex-direction: row-reverse; }
+    .avatar {
+      flex: 0 0 34px;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: #e3ecfb;
+    }
+    .bubble {
+      max-width: 78%;
+      padding: 11px 14px;
+      border-radius: 14px;
+      line-height: 1.7;
+      font-size: 14.5px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.bot .bubble {
+      background: var(--bot-bg);
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+    }
+    .msg.user .bubble {
+      background: var(--user-bg);
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+    .sources {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #5a6478;
+    }
+    .sources span {
+      display: inline-block;
+      margin: 2px 4px 0 0;
+      padding: 1px 8px;
+      background: #eef2fa;
+      border-radius: 999px;
+    }
+    .src-mode {
+      font-size: 11px;
+      color: #8a93a6;
+      margin-top: 6px;
+    }
+    form {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    textarea {
+      flex: 1;
+      resize: none;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-family: inherit;
+      height: 48px;
+    }
+    button {
+      padding: 0 20px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .samples { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .samples button {
+      padding: 5px 12px;
+      font-size: 12.5px;
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .typing { font-style: italic; color: #8a93a6; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🏥 門診掛號智能助理</h1>
+      <p>詢問門診掛號、門診時段、報到流程、各科別等常見問題 (Clinic Q&amp;A Agent)</p>
+      <span class="mode-badge" id="modeBadge">模式偵測中…</span>
+    </header>
+
+    <div class="disclaimer">
+      ⚠️ 提醒：本助理為 workshop 示範用途，提供門診掛號等一般行政資訊，<strong>並非醫療建議或診斷</strong>。
+      如有身體不適或緊急狀況，請直接就醫或撥打急診專線。
+    </div>
+
+    <div class="samples" id="samples">
+      <button type="button">如何掛號？</button>
+      <button type="button">晚診可以帶小孩掛號嗎?</button>
+      <button type="button">門診時段有哪些？</button>
+      <button type="button">怎麼取消掛號？</button>
+      <button type="button">喉嚨痛要看哪一科？</button>
+    </div>
+
+    <div class="chat" id="chat"></div>
+
+    <form id="form">
+      <textarea id="input" placeholder="輸入您的問題，例如：晚診可以帶小孩掛號嗎?" autocomplete="off"></textarea>
+      <button type="submit" id="send">送出</button>
+    </form>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const modeBadge = document.getElementById('modeBadge');
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function addMessage(role, text, meta) {
+      const msg = document.createElement('div');
+      msg.className = 'msg ' + role;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = role === 'user' ? '🙋' : '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerHTML = escapeHtml(text);
+
+      if (meta) {
+        if (meta.sources && meta.sources.length) {
+          const sources = document.createElement('div');
+          sources.className = 'sources';
+          sources.innerHTML = '📚 參考來源：' +
+            meta.sources.map(s => '<span>' + escapeHtml(s) + '</span>').join('');
+          bubble.appendChild(sources);
+        }
+        const mode = document.createElement('div');
+        mode.className = 'src-mode';
+        mode.textContent = '回答模式：' + (meta.mode || '未知');
+        bubble.appendChild(mode);
+      }
+
+      msg.appendChild(avatar);
+      msg.appendChild(bubble);
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+      return bubble;
+    }
+
+    async function refreshMode() {
+      try {
+        const res = await fetch('/health');
+        const data = await res.json();
+        modeBadge.textContent = '目前模式：' + data.mode;
+      } catch {
+        modeBadge.textContent = '無法連線到服務';
+      }
+    }
+
+    async function ask(question) {
+      addMessage('user', question);
+      input.value = '';
+      sendBtn.disabled = true;
+
+      const placeholder = addMessage('bot', '思考中…');
+      placeholder.classList.add('typing');
+
+      try {
+        const res = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        placeholder.parentElement.remove();
+        addMessage('bot', data.answer, { mode: data.mode, sources: data.sources });
+        modeBadge.textContent = '目前模式：' + data.mode;
+      } catch (err) {
+        placeholder.classList.remove('typing');
+        placeholder.textContent = '發生錯誤，請確認服務是否啟動。';
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (q) ask(q);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    document.getElementById('samples').addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') ask(e.target.textContent.trim());
+    });
+
+    refreshMode();
+    addMessage('bot', '您好！我是門診掛號智能助理，可以協助您了解掛號、門診時段、報到流程與各科別等問題。請問需要什麼協助呢？');
+  </script>
+</body>
+</html>
