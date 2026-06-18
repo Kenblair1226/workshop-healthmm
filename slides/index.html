@@ -262,36 +262,21 @@ h2.slide-h .accent { display: inline; }
 <section class="slide">
     <span class="snum">03</span><span class="brand">您最關心的問題</span>
     <div class="slide-content">
-        <p class="eyebrow reveal">The Pain</p>
-        <h2 class="slide-h reveal">三個讓 HIS 團隊頭痛的問題</h2>
-        <ul class="bullet-list reveal" style="margin-top: var(--content-gap); font-size: var(--h3-size); gap: clamp(0.6rem,2vh,1.4rem);">
-            <li><b>系統維護負擔重</b>，牽一髮動全身 — 怎麼破？</li>
-            <li><b>臨床與行政需求變動快</b>，改版跟不上 — 怎麼辦？</li>
-            <li><b>資料分散</b>，AI 應用難落地 — 如何整合？</li>
-        </ul>
-        <p class="goal reveal">本場從 SDLC 出發，結合 GitHub Copilot + Azure，實作完整升級路徑。</p>
-    </div>
-</section>
-
-<!-- ============ 04 學員調查 ============ -->
-<section class="slide">
-    <span class="snum">04</span><span class="brand">學員調查</span>
-    <div class="slide-content">
-        <p class="eyebrow reveal">Your Voice · 前期問卷收集</p>
-        <h2 class="slide-h reveal">您的<span class="accent">真實痛點</span>，我們聽到了</h2>
-        <div class="grid reveal" style="margin-top: var(--content-gap); grid-template-columns: repeat(2, 1fr);">
-            <div class="kcard"><span class="ic">📚</span><h3>Legacy 困境</h3><p>「系統龐大難切割，業務邏輯說不清，無文件可循…」</p></div>
-            <div class="kcard c2"><span class="ic">⏱️</span><h3>效率瓶頸</h3><p>「開發速度慢、人力不足、需求變動快跟不上…」</p></div>
-            <div class="kcard c3"><span class="ic">🛡️</span><h3>治理挑戰</h3><p>「Copilot 生成的程式不符合團隊規範，如何在高資安環境導入…」</p></div>
-            <div class="kcard"><span class="ic">🔧</span><h3>現代化債</h3><p>「.NET Framework 轉置、ActiveX 翻新、舊架構包袱…」</p></div>
+        <p class="eyebrow reveal">Your Pain Points · 前期問卷收集</p>
+        <h2 class="slide-h reveal">HIS 團隊的<span class="accent">四大痛點</span></h2>
+        <div class="grid reveal" style="margin-top: var(--content-gap); grid-template-columns: repeat(2, 1fr); font-size: clamp(1rem, 2.2vh, 1.3rem);">
+            <div class="kcard"><span class="ic">📚</span><h3 style="font-size: clamp(1.3rem, 2.8vh, 1.8rem);">Legacy 困境</h3><p>系統龐大難切割、業務邏輯說不清、無文件可循…牽一髮動全身。</p></div>
+            <div class="kcard c2"><span class="ic">⏱️</span><h3 style="font-size: clamp(1.3rem, 2.8vh, 1.8rem);">效率瓶頸</h3><p>開發速度慢、人力不足、臨床需求變動快改版跟不上…</p></div>
+            <div class="kcard c3"><span class="ic">🛡️</span><h3 style="font-size: clamp(1.3rem, 2.8vh, 1.8rem);">治理挑戰</h3><p>Copilot 生成的程式不符合團隊規範，如何在高資安環境導入？</p></div>
+            <div class="kcard"><span class="ic">🔧</span><h3 style="font-size: clamp(1.3rem, 2.8vh, 1.8rem);">現代化債</h3><p>.NET Framework 轉置、ActiveX 翻新、舊架構包袱…</p></div>
         </div>
-        <p class="goal reveal">本場 Lab 直接對焦這些痛點：讀懂 Legacy → 安全重構 → 團隊規範 → 測試守門 → 上雲落地。</p>
+        <p class="goal reveal" style="font-size: clamp(1rem, 2.2vh, 1.3rem);">本場 Lab 直接對焦：讀懂 Legacy → 安全重構 → 團隊規範 → 測試守門 → 上雲落地。</p>
     </div>
 </section>
 
-<!-- ============ 05 解法 SDLC ============ -->
+<!-- ============ 04 解法 SDLC ============ -->
 <section class="slide">
-    <span class="snum">05</span><span class="brand">解法概念</span>
+    <span class="snum">04</span><span class="brand">解法概念</span>
     <div class="slide-content">
         <p class="eyebrow reveal">The Approach · AI-Augmented SDLC</p>
         <h2 class="slide-h reveal">AI 理解 <span class="accent">→</span> 修改 <span class="accent">→</span> 部署</h2>
@@ -306,7 +291,7 @@ h2.slide-h .accent { display: inline; }
     </div>
 </section>
 
-<!-- ============ 06 SECTION: 基礎 ============ -->
+<!-- ============ 05 SECTION: 基礎 ============ -->
 <section class="slide">
     <div class="slide-content" style="align-items:flex-start;">
         <div class="section-num reveal">01</div>
@@ -319,9 +304,9 @@ h2.slide-h .accent { display: inline; }
     </div>
 </section>
 
-<!-- ============ 07 環境準備 ============ -->
+<!-- ============ 06 環境準備 ============ -->
 <section class="slide">
-    <span class="snum">07</span><span class="brand">Lab 00 · Setup</span>
+    <span class="snum">06</span><span class="brand">Lab 00 · Setup</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 00 · 環境準備</p>
         <h2 class="slide-h reveal">三步驟備好你的工作站</h2>
@@ -344,7 +329,7 @@ cd src/legacy/HisLegacy
 
 <!-- ============ 08 Lab1 讀懂 ============ -->
 <section class="slide">
-    <span class="snum">08</span><span class="brand">Lab 01</span>
+    <span class="snum">07</span><span class="brand">Lab 01</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 01 · 讀懂程式碼</p>
         <h2 class="slide-h reveal">讓 Copilot 當你的 <span class="accent">Legacy 嚮導</span></h2>
@@ -367,7 +352,7 @@ cd src/legacy/HisLegacy
 
 <!-- ============ 09 Lab2 重構 ============ -->
 <section class="slide">
-    <span class="snum">09</span><span class="brand">Lab 02</span>
+    <span class="snum">08</span><span class="brand">Lab 02</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 02 · Code 重構</p>
         <h2 class="slide-h reveal">乾淨內在，<span class="accent">不動外部契約</span></h2>
@@ -382,7 +367,7 @@ cd src/legacy/HisLegacy
 
 <!-- ============ 10 模型選擇 (slide-only) ============ -->
 <section class="slide">
-    <span class="snum">10</span><span class="brand">模型選擇</span>
+    <span class="snum">09</span><span class="brand">模型選擇</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Pro Tip · 模型選擇 Model Selection</p>
         <h2 class="slide-h reveal">對的任務，配<span class="accent">對的模型</span></h2>
@@ -397,7 +382,7 @@ cd src/legacy/HisLegacy
 
 <!-- ============ 11 Lab4 Extensions/Skills ============ -->
 <section class="slide">
-    <span class="snum">11</span><span class="brand">Lab 03</span>
+    <span class="snum">10</span><span class="brand">Lab 03</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 03 · Extensions · Skills · MCP</p>
         <h2 class="slide-h reveal">把 Copilot 接上你的<span class="accent">工具鏈</span></h2>
@@ -420,7 +405,7 @@ cd src/legacy/HisLegacy
 
 <!-- ============ 12 Lab5 測試 ============ -->
 <section class="slide">
-    <span class="snum">12</span><span class="brand">Lab 04</span>
+    <span class="snum">11</span><span class="brand">Lab 04</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 04 · 加上安全網</p>
         <h2 class="slide-h reveal">先有測試，<span class="accent">重構才安心</span></h2>
@@ -440,7 +425,7 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 13 SECTION: 進階 ============ -->
+<!-- ============ 12 SECTION: 進階 ============ -->
 <section class="slide">
     <div class="slide-content" style="align-items:flex-start;">
         <div class="section-num reveal">02</div>
@@ -453,9 +438,9 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 14 架構演進 ============ -->
+<!-- ============ 13 架構演進 ============ -->
 <section class="slide">
-    <span class="snum">14</span><span class="brand">架構演進</span>
+    <span class="snum">13</span><span class="brand">架構演進</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Architecture · Legacy → Cloud-Ready</p>
         <h2 class="slide-h reveal">逐步演進，<span class="accent">而非打掉重練</span></h2>
@@ -470,9 +455,9 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 15 Lab5 容器化 App Service ============ -->
+<!-- ============ 14 Lab5 容器化 App Service ============ -->
 <section class="slide">
-    <span class="snum">15</span><span class="brand">Lab 05</span>
+    <span class="snum">14</span><span class="brand">Lab 05</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 05 · 容器化 → Azure App Service</p>
         <h2 class="slide-h reveal">一個 <span class="accent">Dockerfile</span>，部署上雲</h2>
@@ -492,9 +477,9 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 16 Lab6 AI Agent ============ -->
+<!-- ============ 15 Lab6 AI Agent ============ -->
 <section class="slide">
-    <span class="snum">16</span><span class="brand">Lab 06</span>
+    <span class="snum">15</span><span class="brand">Lab 06</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Lab 06 · 臨床問答 AI Agent</p>
         <h2 class="slide-h reveal">為系統加上<span class="accent">臨床問答助理</span></h2>
@@ -514,9 +499,9 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 17 治理 ============ -->
+<!-- ============ 16 治理 ============ -->
 <section class="slide">
-    <span class="snum">17</span><span class="brand">企業治理</span>
+    <span class="snum">16</span><span class="brand">企業治理</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Governance</p>
         <h2 class="slide-h reveal">在<span class="accent">高資安環境</span>安心導入</h2>
@@ -529,9 +514,9 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 18 Takeaways ============ -->
+<!-- ============ 17 Takeaways ============ -->
 <section class="slide">
-    <span class="snum">18</span><span class="brand">重點回顧</span>
+    <span class="snum">17</span><span class="brand">重點回顧</span>
     <div class="slide-content">
         <p class="eyebrow reveal">Key Takeaways</p>
         <h2 class="slide-h reveal">帶走這<span class="accent">四件事</span></h2>
@@ -544,7 +529,7 @@ cd src/legacy/HisLegacy
     </div>
 </section>
 
-<!-- ============ 19 結尾 ============ -->
+<!-- ============ 18 結尾 ============ -->
 <section class="slide title-slide">
     <span class="brand">Healthcare SDLC 2.0</span>
     <div class="slide-content">
