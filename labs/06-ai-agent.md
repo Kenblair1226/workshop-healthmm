@@ -66,16 +66,48 @@ dotnet run
 並確認 mock 模式能依關鍵字回答。
 ```
 
-### 4. 容器化部署（選做）
+### 4. 部署到 Foundry Agent Service（hosted agent，選做）
+
+> 本步將 Agent 以**容器**形式部署成 **Foundry Agent Service 的 hosted agent**：
+> `azd` 會把程式打包成映像、推到 ACR，再由 Foundry 發佈成一個可呼叫的 agent endpoint + playground。
+>
+> ⚠️ Hosted agents 目前為 **preview**，且受限於特定區域（例如 *North Central US*），請以 [官方文件](https://learn.microsoft.com/azure/ai-foundry/agents/concepts/hosted-agents)為準。
+
+**前置需求**
+
+- [Azure Developer CLI (azd) 1.25.3+](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- `azd` 的 Foundry 擴充：`azd ext install microsoft.foundry`
+- 角色：沒有現有專案需資源群組 `Owner`；已有專案需 `Foundry Project Manager`
+
+**將 `ClinicQaAgent` 轉成 hosted agent**
+
+hosted agent 要求程式透過 **Foundry agent protocol** 暴露端點，因此需加上托管函式庫
+（.NET 用 `azure-ai-agentserver`）包住現有問答邏輯。可參考官方 [C# bring-your-own 範例](https://github.com/microsoft-foundry/foundry-samples/tree/main/samples/csharp/hosted-agents/bring-your-own)。
+
+**部署流程（azd）**
 
 ```bash
-docker build -f src/agent/ClinicQaAgent/Dockerfile -t clinic-agent:v1 src/agent/ClinicQaAgent
-docker run -p 5095:8080 \
-  -e AZURE_OPENAI_ENDPOINT -e AZURE_OPENAI_API_KEY -e AZURE_OPENAI_DEPLOYMENT \
-  clinic-agent:v1
+cd src/agent/ClinicQaAgent
+
+# 1) 以現有程式碼初始化 hosted agent 專案（依提示選 Foundry 專案 / 訂閱 / 區域）
+azd ai agent init --deploy-mode code
+
+# 2) 佈置 Azure 資源（Foundry 專案、Application Insights 等）
+azd provision
+
+# 3) 本機試跢（開啟 agent inspector）
+azd ai agent run
+
+# 4) 部署到 Foundry Agent Service（打包映像 → ACR → 發佈 agent）
+azd deploy
+
+# 5) 呼叫已部署的 agent
+azd ai agent invoke "晚診可以帶小孩掛號嗎?"
 ```
 
-> Azure OpenAI 金鑰請放入 **Key Vault / App Settings**，切勿寫進程式或映像檔。
+`azd deploy` 完成後會輸出 **agent playground**（Foundry portal）與 **agent endpoint** 連結。
+
+> Azure OpenAI 金鑰請放入 **Key Vault / App Settings 或交由 azd / Managed Identity 管理**，切勿寫進程式或映像檔。
 
 ---
 
@@ -84,11 +116,13 @@ docker run -p 5095:8080 \
 - [ ] Mock 模式可離線回答門診問題
 - [ ] （有金鑰時）切換到 Azure OpenAI 模式成功
 - [ ] 能用 Copilot 新增一則 FAQ 並驗證
+- [ ] （選做）以 `azd` 將 agent 部署成 Foundry Agent Service 的 hosted agent，並可在 playground 呼叫
 
 ## 講師筆記
 
 - 強調 **grounding**：醫療場景嚴禁模型亂答，知識庫 + 系統提示是護欄。
 - 強調 **祕密管理**：金鑰走 Key Vault / Managed Identity，不落地。
+- 強調 **Foundry Agent Service**：`azd ai agent` 一鍵將自家程式容器化、發佈成托管 agent，取得安全（Entra ID）的 agent endpoint。
 - 收尾呼應主題：乾淨架構 + Agent = AI-Ready Platform。
 
 🎉 恭喜完成所有 Lab！回到 [README](../README.md) 看完整地圖。

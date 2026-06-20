@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "awesome-copilot": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "awesome-copilot-mcp@latest", "start"]
+    }
+  }
+}
