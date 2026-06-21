@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <!--
     Clinic Q&A Agent (臨床問答助理) - workshop 進階範例
@@ -7,15 +7,26 @@
     與隔壁刻意保留 legacy 風格的 HisLegacy 形成對比。
   -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- Foundry hosted agent 以 BYO Responses 協定執行, runtime 對齊 agent.yaml 的 dotnet_10 -->
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ClinicQaAgent</RootNamespace>
-    <!-- SK 部分連線/設定 API 標註為 experimental, 在教學專案中以 NoWarn 略過提示 -->
-    <NoWarn>$(NoWarn);SKEXP0010</NoWarn>
+    <!-- SK 部分連線/設定 API + OpenAI Responses 型別標註為 experimental, 教學專案以 NoWarn 略過 -->
+    <NoWarn>$(NoWarn);SKEXP0010;OPENAI001</NoWarn>
+    <UserSecretsId>771d90f5-d098-48c2-98c4-df7d0cdc0d75</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Foundry Responses 協定 SDK: ResponsesServer / ResponseHandler / TextResponse / ResponseContext -->
+    <PackageReference Include="Azure.AI.AgentServer.Responses" Version="1.0.0-beta.5" />
+    <!-- Foundry SDK: AIProjectClient / ProjectOpenAIClient -->
+    <PackageReference Include="Azure.AI.Projects" Version="2.0.0" />
+    <!-- Foundry x OpenAI 橋接: GetProjectResponsesClientForModel() / CreateResponseOptions / ResponseItem -->
+    <PackageReference Include="Azure.AI.Extensions.OpenAI" Version="2.0.0" />
+    <!-- DefaultAzureCredential (本機 az login / 容器內 Managed Identity) -->
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <!-- 本機 mock / Azure OpenAI 教學路徑 (ClinicQaService) 仍使用 -->
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.77.0" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
 using System.Text;
+using Azure.Identity;
 using ClinicQaAgent.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -42,23 +43,39 @@ public sealed class ClinicQaService
         if (!options.IsConfigured)
         {
             _logger.LogInformation(
-                "未設定 Azure OpenAI (Endpoint/ApiKey/DeploymentName)，啟用本地 mock 模式。");
+                "未設定 Azure OpenAI (Endpoint/DeploymentName)，啟用本地 mock 模式。");
             return;
         }
 
         try
         {
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.AddAzureOpenAIChatCompletion(
-                deploymentName: options.DeploymentName!,
-                endpoint: options.Endpoint!,
-                apiKey: options.ApiKey!);
+
+            if (options.UseApiKey)
+            {
+                // 金鑰認證 (適合一次性 demo)。
+                kernelBuilder.AddAzureOpenAIChatCompletion(
+                    deploymentName: options.DeploymentName!,
+                    endpoint: options.Endpoint!,
+                    apiKey: options.ApiKey!);
+            }
+            else
+            {
+                // Keyless: 以 Microsoft Entra ID 認證 (DefaultAzureCredential)。
+                // 適用於資源停用本機金鑰 (disableLocalAuth=true) 的情境;
+                // 本機會採用 az login 身分, 雲端則建議使用 Managed Identity。
+                kernelBuilder.AddAzureOpenAIChatCompletion(
+                    deploymentName: options.DeploymentName!,
+                    endpoint: options.Endpoint!,
+                    credentials: new DefaultAzureCredential());
+            }
 
             _kernel = kernelBuilder.Build();
             _chatService = _kernel.GetRequiredService<IChatCompletionService>();
             _logger.LogInformation(
-                "已連接 Azure OpenAI deployment '{Deployment}'，啟用 azure-openai 模式。",
-                options.DeploymentName);
+                "已連接 Azure OpenAI deployment '{Deployment}' ({Auth})，啟用 azure-openai 模式。",
+                options.DeploymentName,
+                options.UseApiKey ? "api-key" : "entra-id");
         }
         catch (Exception ex)
         {

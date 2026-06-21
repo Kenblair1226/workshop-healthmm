@@ -1,13 +1,24 @@
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "http": {
+    "mock": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5095",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "agent": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "PORT": "8088",
+        "FOUNDRY_PROJECT_ENDPOINT": "https://admin-8348-resource.services.ai.azure.com/api/projects/admin-8348",
+        "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5.4-1"
       }
     }
   }

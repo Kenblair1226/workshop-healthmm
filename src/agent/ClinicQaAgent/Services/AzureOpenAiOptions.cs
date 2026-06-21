@@ -3,7 +3,13 @@ namespace ClinicQaAgent.Services;
 /// <summary>
 /// Azure OpenAI 連線設定。
 /// 讀取優先序: 設定檔 (appsettings.json 的 "AzureOpenAI" 區段) → 環境變數。
-/// 三個值任一為空時, 服務會自動退回 (fallback) 到本地 mock 模式。
+///
+/// 認證方式:
+/// - 有填 ApiKey       → 以金鑰認證。
+/// - 沒填 ApiKey       → 以 Microsoft Entra ID (keyless / DefaultAzureCredential) 認證,
+///   適用於資源停用金鑰 (disableLocalAuth=true) 的情境; 本機可靠 az login 身分。
+///
+/// Endpoint 與 DeploymentName 任一為空時, 服務會自動退回 (fallback) 到本地 mock 模式。
 /// </summary>
 public sealed class AzureOpenAiOptions
 {
@@ -14,12 +20,17 @@ public sealed class AzureOpenAiOptions
     public string? DeploymentName { get; set; }
 
     /// <summary>
-    /// 三個必要設定都存在時, 才算「已設定 Azure OpenAI」。
+    /// Endpoint 與 DeploymentName 都存在時, 才算「已設定 Azure OpenAI」。
+    /// ApiKey 為選用: 留空則改走 Entra ID (keyless) 認證。
     /// </summary>
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(Endpoint) &&
-        !string.IsNullOrWhiteSpace(ApiKey) &&
         !string.IsNullOrWhiteSpace(DeploymentName);
+
+    /// <summary>
+    /// 是否以金鑰認證 (有填 ApiKey); 否則使用 Entra ID (keyless)。
+    /// </summary>
+    public bool UseApiKey => !string.IsNullOrWhiteSpace(ApiKey);
 
     /// <summary>
     /// 從 IConfiguration 載入設定, 並以環境變數作為後援 (fallback)。
